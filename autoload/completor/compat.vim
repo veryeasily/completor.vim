@@ -3,7 +3,7 @@ function! s:vim_oneshot_handler(ch)
   while ch_status(a:ch) ==# 'buffered'
     call add(msg, ch_read(a:ch))
   endwhile
-  call completor#trigger(msg)
+  call completor#action#callback(msg)
 endfunction
 
 
@@ -31,7 +31,7 @@ function! s:nvim_oneshot_handler(job_id, data, event)
   if a:event ==# 'stdout' || a:event ==# 'stderr'
     call s:nvim_read(a:data)
   elseif a:event ==# 'exit'
-    call completor#trigger(s:nvim_oneshot_msg)
+    call completor#action#callback(s:nvim_oneshot_msg)
   endif
 endfunction
 
