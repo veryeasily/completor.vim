@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from completor import Completor, get_encoding
+from completor import Completor, get_encoding, vim
 from completor.compat import to_unicode, to_bytes
 
-import vim
 import re
+import logging
 
 from .utils import REGEX_MAP
+
+logger = logging.getLogger('completor')
 
 
 class Omni(Completor):
@@ -48,16 +50,21 @@ class Omni(Completor):
         if not trigger or not trigger.search(base):
             return []
 
+        cursor = self.cursor
         try:
             func_name = vim.current.buffer.options['omnifunc']
+            logger.info('omnifunc: %s', func_name)
             if not func_name:
                 return []
 
             omnifunc = vim.Function(func_name)
             start = omnifunc(1, '')
             codepoint = self.start_column()
+            logger.info('start: %s,%s', start, codepoint)
             if start < 0 or start != codepoint:
                 return []
             return omnifunc(0, to_bytes(base, get_encoding())[codepoint:])
         except (vim.error, ValueError, KeyboardInterrupt):
             return []
+        finally:
+            self.cursor = cursor

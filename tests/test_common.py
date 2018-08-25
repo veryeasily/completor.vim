@@ -6,28 +6,27 @@ from completor.compat import to_unicode
 
 from completers.common import Common  # noqa
 
-from . import Buffer
 
-
-def test_get_completions(vim_mod):
+def test_on_data(vim_mod, create_buffer):
     common = completor.get('common')
+    common.input_data = 'urt'
 
     vim_mod.current.buffer.number = 1
     vim_mod.current.window.cursor = (1, 2)
 
-    buffer = Buffer(1)
+    buffer = create_buffer(1)
     with open(__file__) as f:
         buffer[:] = f.read().split('\n')
 
     vim_mod.buffers = [buffer]
-    assert common.get_completions('urt') == [
-        {'menu': '[snip] mock snips', 'word': 'ultisnips_trigger'},
+    assert common.on_data(b'complete', b'urt') == [
+        {'menu': '[snip] mock snips', 'word': 'urt', 'dup': 1},
         {'menu': '[ID]', 'word': 'current'}
     ]
 
     vim_mod.vars = {'completor_disable_ultisnips': 1}
 
-    assert common.get_completions('urt') == [
+    assert common.on_data(b'complete', b'urt') == [
         {'menu': '[ID]', 'word': 'current'}]
 
     vim_mod.vars = {
@@ -35,12 +34,12 @@ def test_get_completions(vim_mod):
         'completor_disable_ultisnips': 0
     }
 
-    assert common.get_completions('urt') == [
-        {'menu': '[snip] mock snips', 'word': 'ultisnips_trigger'}]
+    assert common.on_data(b'complete', b'urt') == [
+        {'menu': '[snip] mock snips', 'word': 'urt', 'dup': 1}]
 
 
-def test_unicode(vim_mod):
-    buffer = Buffer(1)
+def test_unicode(vim_mod, create_buffer):
+    buffer = create_buffer(1)
     with open('./tests/test.txt') as f:
         buffer[:] = f.read().split('\n')
     vim_mod.buffers = [buffer]
@@ -50,7 +49,7 @@ def test_unicode(vim_mod):
     buf = completor.get('buffer')
     buf.input_data = to_unicode('pielę pielęgn', 'utf-8')
     assert buf.start_column() == 7
-    assert buf.get_completions(b'piel\xc4\x99gn') == [
+    assert buf.on_data(b'complete', b'piel\xc4\x99gn') == [
         {'menu': '[ID]', 'word': to_unicode('pielęgniarką', 'utf-8')},
         {'menu': '[ID]', 'word': to_unicode('pielęgniarkach', 'utf-8')}
     ]
@@ -65,10 +64,10 @@ def test_min_chars(vim_mod, monkeypatch):
     mock_snips_parse = mock.Mock(return_value=['snips'])
     monkeypatch.setattr(completor.get('ultisnips'), 'parse', mock_snips_parse)
 
-    assert common.get_completions('he') == []
+    assert common.on_data(b'complete', b'he') == []
     mock_buffer_parse.assert_not_called()
     mock_snips_parse.assert_not_called()
 
-    assert common.get_completions('hello') == ['snips', 'hello']
+    assert common.on_data(b'complete', b'hello') == ['snips', 'hello']
     mock_buffer_parse.assert_called_with('hello')
     mock_snips_parse.assert_called_with('hello')

@@ -20,13 +20,12 @@ def test_disabled(vim_mod):
 
 
 def test_load(vim_mod, monkeypatch):
-    from completor import _completor
+    from completor import Meta
     vim_mod.eval = mock.Mock(return_value={})
     vim_mod.vars = {}
 
-    with mock.patch.object(_completor, '_type_map',
+    with mock.patch.object(Meta, 'type_map',
                            {b'python.django': b'python'}):
-        assert load_completer(b'', b'/etc') is get('filename')
         assert load_completer(b'hello', b'') is None
         assert get('python') is None
         c = load_completer(b'python', b'os.')
@@ -45,3 +44,13 @@ def test_load(vim_mod, monkeypatch):
             'completor_css_omni_trigger': b'([\w-]+|@[\w-]*|[\w-]+:\s*[\w-]*)$'
         }
         assert load_completer(b'css', b'text') is get('omni')
+
+
+def test_parse_config():
+    h = HelloCompleter()
+    args = h.parse_config('tests/test_config')
+    assert args == ['-I/home/hello', '-x', '--std=c11', '-hello=world',
+                    'abcd', '-a', '123']
+    args = h.parse_config(['tests/invalid', 'tests/args',
+                           'tests/tests_config'])
+    assert args == ['-x', 'c', '-D/usr/lib/', '123']

@@ -1,3 +1,6 @@
+import vim
+
+
 def _bytes(data):
     from completor import get_encoding
 
@@ -15,7 +18,15 @@ def _bytes(data):
     return data
 
 
-def patch_nvim(vim):
+class _Vim(object):
+    def __getattr__(self, attr):
+        return getattr(vim, attr)
+
+
+vim_obj = _Vim()
+
+
+def _patch_nvim(vim):
     class Bindeval(object):
         def __init__(self, data):
             self.data = data
@@ -43,4 +54,9 @@ def patch_nvim(vim):
     vim.Function = function
     vim.bindeval = bindeval
     vim.List = list
+    vim.Dictionary = dict
     vim.vars = vars_wrapper()
+
+
+if hasattr(vim, 'from_nvim'):
+    _patch_nvim(vim_obj)

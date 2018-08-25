@@ -3,9 +3,8 @@
 import collections
 import itertools
 import re
-import vim
 
-from completor import Completor
+from completor import Completor, vim
 from completor.compat import to_unicode
 
 from .utils import test_subseq, LIMIT
@@ -76,6 +75,7 @@ class TokenStore(object):
 
         for buffer in vim.buffers:
             self.store_buffer(buffer, base, nr, line)
+
 
 token_store = TokenStore()
 

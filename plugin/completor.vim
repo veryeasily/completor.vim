@@ -33,15 +33,19 @@ let g:completor_blacklist = get(g:, 'completor_blacklist', s:default_blacklist)
 let g:completor_filesize_limit = get(g:, 'completor_filesize_limit', 1024) * 1024
 let g:completor_min_chars = get(g:, 'completor_min_chars', 2)
 let g:completor_completion_delay = get(g:, 'completor_completion_delay', 80)
+let g:completor_refresh_always = get(g:, 'completor_refresh_always', 1)
+let g:completor_doc_position = get(g:, 'completor_doc_position', 'bottom')
+let g:completor_def_split = get(g:, 'completor_def_split', '')
+let g:completor_complete_options = get(g:, 'completor_complete_options', 'menuone,noselect,preview')
 
 
 augroup completor
     autocmd!
-    autocmd InsertEnter * call completor#enable()
+    autocmd InsertEnter * call completor#enable_autocomplete()
 augroup END
 
 
-command! CompletorDisable call completor#disable()
-command! CompletorEnable call completor#enable()
+command! CompletorDisable call completor#disable_autocomplete()
+command! CompletorEnable call completor#enable_autocomplete()
 
 call s:restore_cpo()

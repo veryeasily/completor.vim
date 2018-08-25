@@ -1,6 +1,8 @@
 *.pyc
 .cache
 completor.log
+completor_python.log
 node_modules
 doc/tags
 __pycache__
+.pytest_cache
